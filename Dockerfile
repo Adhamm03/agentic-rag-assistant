@@ -25,4 +25,4 @@ ENV PYTHONUNBUFFERED=1 \
 # Models (bge-m3, reranker, bm25) download on first startup into HF_HOME — mount
 # a volume there (see docker-compose) so they persist across restarts.
 EXPOSE 8000
-CMD ["python", "-m", "uvicorn", "app.api:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD python -m uvicorn app.api:app --host 0.0.0.0 --port ${PORT:-8000}
