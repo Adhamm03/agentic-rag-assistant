@@ -1,0 +1,17 @@
+id,lang,cross_lingual,question,ground_truth,reference_doc
+q01,en,False,What is the maximum annual coverage ceiling per member?,"EGP 500,000 per member per policy year.",01_policy_terms_en.pdf
+q02,en,False,What co-payment applies to outpatient consultations?,"A 10% co-payment, payable by the member at the point of service.",01_policy_terms_en.pdf
+q03,en,False,How long is the waiting period for maternity benefits?,Ten months of continuous cover.,01_policy_terms_en.pdf
+q04,en,False,Within how many days must an out-of-network claim be submitted?,Within 60 days of the date of service.,01_policy_terms_en.pdf
+q05,en,False,What is the annual limit for dental treatment and its co-pay?,"EGP 3,000 per year with a 20% co-payment; cosmetic dental is excluded.",01_policy_terms_en.pdf
+q06,en,False,How often can optical benefits be claimed and up to what amount?,"Up to EGP 1,500, once every two years, with no co-payment.",01_policy_terms_en.pdf
+q07,ar,False,ما هو الحد الأقصى السنوي للتغطية لكل عضو؟,خمسمائة ألف جنيه مصري لكل عضو في سنة الوثيقة.,02_coverage_summary_ar.pdf
+q08,ar,False,ما نسبة التحمل على علاج الأسنان؟,عشرون بالمائة.,02_coverage_summary_ar.pdf
+q09,ar,False,كم مدة فترة الانتظار للحالات المرضية السابقة للتأمين؟,اثنا عشر شهرًا.,02_coverage_summary_ar.pdf
+q10,ar,False,خلال كم يومًا تُسدَّد المطالبات المعتمدة؟,خلال خمسة عشر يوم عمل من استلام ملف المطالبة كاملًا.,02_coverage_summary_ar.pdf
+q11,ar,True,ما رقم الخط الساخن للطوارئ؟,19240.,01_policy_terms_en.pdf
+q12,en,True,Is a co-payment charged for in-network inpatient treatment?,"No, in-network inpatient treatment carries no co-payment.",02_coverage_summary_ar.pdf
+q13,en,False,Do I need a referral to see a specialist?,"No referral is needed, but the 10% outpatient co-payment applies.",03_faq_two_column_mixed.pdf
+q14,ar,False,كيف أضيف مولودًا جديدًا كأحد المعالين؟,برفع شهادة الميلاد عبر بوابة الأعضاء خلال ثلاثين يومًا من الولادة، وتبدأ التغطية من تاريخ الميلاد بعد اعتماد التسجيل.,03_faq_two_column_mixed.pdf
+q15,en,False,"If an out-of-network outpatient bill is EGP 2,000, how much is reimbursed after co-pay?","EGP 1,800 — the 10% outpatient co-payment (EGP 200) is deducted from the approved amount.",04_claims_procedure_mixed.pdf
+q16,en,False,Does the policy cover LASIK eye surgery?,Not stated in the provided documents. The policy excludes cosmetic procedures but LASIK is not addressed; the system should abstain rather than guess.,

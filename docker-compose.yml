@@ -1,0 +1,41 @@
+# Full stack: Qdrant (vector DB) + FastAPI backend + nginx-served React frontend.
+#
+#   docker compose up --build
+#   -> frontend at http://localhost:5173   (proxies /api to the backend)
+#   -> backend  at http://localhost:8000   (/docs for the API)
+#
+# Requires a .env at the repo root with at least OPENAI_API_KEY (the generator).
+# First startup is slow: the backend downloads the embedding + reranker models
+# (~4 GB) into the model_cache volume; later starts reuse it.
+
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    restart: unless-stopped
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  backend:
+    build: .
+    restart: unless-stopped
+    env_file: .env                 # OPENAI_API_KEY etc. (judge keys unused here)
+    environment:
+      QDRANT_URL: http://qdrant:6333   # use the Qdrant service, not embedded mode
+    volumes:
+      - model_cache:/root/.cache    # persist HF + fastembed model downloads
+    ports:
+      - "8000:8000"
+    depends_on:
+      - qdrant
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  qdrant_data:
+  model_cache:

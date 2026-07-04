@@ -1,0 +1,19 @@
+# Secrets are passed at runtime (env_file), never baked into the image.
+.env
+.env.example
+
+# Not needed in the backend image.
+venv/
+frontend/
+qdrant_storage/
+node_modules/
+__pycache__/
+**/__pycache__/
+*.pyc
+.git/
+.gitignore
+docs/
+
+# Generated eval artifacts (the pipeline regenerates them).
+eval/results.json
+eval/ragas_comparison.png

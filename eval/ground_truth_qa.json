@@ -1,0 +1,146 @@
+[
+  {
+    "id": "q01",
+    "lang": "en",
+    "cross_lingual": false,
+    "question": "What is the maximum annual coverage ceiling per member?",
+    "ground_truth": "EGP 500,000 per member per policy year.",
+    "reference_doc": "01_policy_terms_en.pdf",
+    "reference_snippet": "The maximum annual coverage ceiling is EGP 500,000 per member per policy year."
+  },
+  {
+    "id": "q02",
+    "lang": "en",
+    "cross_lingual": false,
+    "question": "What co-payment applies to outpatient consultations?",
+    "ground_truth": "A 10% co-payment, payable by the member at the point of service.",
+    "reference_doc": "01_policy_terms_en.pdf",
+    "reference_snippet": "Outpatient consultations and diagnostics are subject to a 10% co-payment."
+  },
+  {
+    "id": "q03",
+    "lang": "en",
+    "cross_lingual": false,
+    "question": "How long is the waiting period for maternity benefits?",
+    "ground_truth": "Ten months of continuous cover.",
+    "reference_doc": "01_policy_terms_en.pdf",
+    "reference_snippet": "Maternity benefits become available after a continuous waiting period of 10 months."
+  },
+  {
+    "id": "q04",
+    "lang": "en",
+    "cross_lingual": false,
+    "question": "Within how many days must an out-of-network claim be submitted?",
+    "ground_truth": "Within 60 days of the date of service.",
+    "reference_doc": "01_policy_terms_en.pdf",
+    "reference_snippet": "claims must be submitted within 60 days of the date of service."
+  },
+  {
+    "id": "q05",
+    "lang": "en",
+    "cross_lingual": false,
+    "question": "What is the annual limit for dental treatment and its co-pay?",
+    "ground_truth": "EGP 3,000 per year with a 20% co-payment; cosmetic dental is excluded.",
+    "reference_doc": "01_policy_terms_en.pdf",
+    "reference_snippet": "Dental | 3,000 | 20% | Excludes cosmetic"
+  },
+  {
+    "id": "q06",
+    "lang": "en",
+    "cross_lingual": false,
+    "question": "How often can optical benefits be claimed and up to what amount?",
+    "ground_truth": "Up to EGP 1,500, once every two years, with no co-payment.",
+    "reference_doc": "01_policy_terms_en.pdf",
+    "reference_snippet": "Optical | 1,500 | 0% | Once every 2 years"
+  },
+  {
+    "id": "q07",
+    "lang": "ar",
+    "cross_lingual": false,
+    "question": "ما هو الحد الأقصى السنوي للتغطية لكل عضو؟",
+    "ground_truth": "خمسمائة ألف جنيه مصري لكل عضو في سنة الوثيقة.",
+    "reference_doc": "02_coverage_summary_ar.pdf",
+    "reference_snippet": "الحد الأقصى السنوي للتغطية هو خمسمائة ألف جنيه مصري لكل عضو في سنة الوثيقة."
+  },
+  {
+    "id": "q08",
+    "lang": "ar",
+    "cross_lingual": false,
+    "question": "ما نسبة التحمل على علاج الأسنان؟",
+    "ground_truth": "عشرون بالمائة.",
+    "reference_doc": "02_coverage_summary_ar.pdf",
+    "reference_snippet": "يخضع علاج الأسنان لنسبة تحمل قدرها عشرون بالمائة."
+  },
+  {
+    "id": "q09",
+    "lang": "ar",
+    "cross_lingual": false,
+    "question": "كم مدة فترة الانتظار للحالات المرضية السابقة للتأمين؟",
+    "ground_truth": "اثنا عشر شهرًا.",
+    "reference_doc": "02_coverage_summary_ar.pdf",
+    "reference_snippet": "الحالات المرضية السابقة للتأمين تخضع لفترة انتظار مدتها اثنا عشر شهرًا."
+  },
+  {
+    "id": "q10",
+    "lang": "ar",
+    "cross_lingual": false,
+    "question": "خلال كم يومًا تُسدَّد المطالبات المعتمدة؟",
+    "ground_truth": "خلال خمسة عشر يوم عمل من استلام ملف المطالبة كاملًا.",
+    "reference_doc": "02_coverage_summary_ar.pdf",
+    "reference_snippet": "تُسدَّد المبالغ المعتمدة خلال خمسة عشر يوم عمل من استلام ملف المطالبة كاملًا."
+  },
+  {
+    "id": "q11",
+    "lang": "ar",
+    "cross_lingual": true,
+    "question": "ما رقم الخط الساخن للطوارئ؟",
+    "ground_truth": "19240.",
+    "reference_doc": "01_policy_terms_en.pdf",
+    "reference_snippet": "contact the 24-hour NileCare emergency hotline on 19240."
+  },
+  {
+    "id": "q12",
+    "lang": "en",
+    "cross_lingual": true,
+    "question": "Is a co-payment charged for in-network inpatient treatment?",
+    "ground_truth": "No, in-network inpatient treatment carries no co-payment.",
+    "reference_doc": "02_coverage_summary_ar.pdf",
+    "reference_snippet": "لا توجد نسبة تحمل على العلاج الداخلي بالمستشفيات المتعاقدة."
+  },
+  {
+    "id": "q13",
+    "lang": "en",
+    "cross_lingual": false,
+    "question": "Do I need a referral to see a specialist?",
+    "ground_truth": "No referral is needed, but the 10% outpatient co-payment applies.",
+    "reference_doc": "03_faq_two_column_mixed.pdf",
+    "reference_snippet": "Outpatient specialist consultations do not require a referral, but the 10% co-payment applies."
+  },
+  {
+    "id": "q14",
+    "lang": "ar",
+    "cross_lingual": false,
+    "question": "كيف أضيف مولودًا جديدًا كأحد المعالين؟",
+    "ground_truth": "برفع شهادة الميلاد عبر بوابة الأعضاء خلال ثلاثين يومًا من الولادة، وتبدأ التغطية من تاريخ الميلاد بعد اعتماد التسجيل.",
+    "reference_doc": "03_faq_two_column_mixed.pdf",
+    "reference_snippet": "يُرفَع شهادة الميلاد عبر بوابة الأعضاء خلال ثلاثين يومًا من الولادة."
+  },
+  {
+    "id": "q15",
+    "lang": "en",
+    "cross_lingual": false,
+    "question": "If an out-of-network outpatient bill is EGP 2,000, how much is reimbursed after co-pay?",
+    "ground_truth": "EGP 1,800 — the 10% outpatient co-payment (EGP 200) is deducted from the approved amount.",
+    "reference_doc": "04_claims_procedure_mixed.pdf",
+    "reference_snippet": "The 10% outpatient co-payment is deducted from the approved amount before settlement."
+  },
+  {
+    "id": "q16",
+    "lang": "en",
+    "cross_lingual": false,
+    "question": "Does the policy cover LASIK eye surgery?",
+    "ground_truth": "Not stated in the provided documents. The policy excludes cosmetic procedures but LASIK is not addressed; the system should abstain rather than guess.",
+    "reference_doc": null,
+    "reference_snippet": null
+  }
+]

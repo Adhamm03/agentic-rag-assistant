@@ -1,0 +1,17 @@
+# Secrets / env
+.env
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Local embedded vector store (regenerable via `python -m app.ingest`)
+qdrant_storage/
+
+# Planning / design docs — kept local, not published
+docs/
+
+# Note: data/pdfs/ and eval/ ARE tracked — they're the corpus + ground-truth
+# fixtures needed to reproduce the RAGAS evaluation.

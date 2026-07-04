@@ -1,0 +1,344 @@
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+}
+
+/* ------------------------------- Header ------------------------------- */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 28px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 11px;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 20px;
+}
+.brand h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+}
+.subtitle {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.status .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  opacity: 0.5;
+}
+.status.on .dot {
+  background: var(--accent);
+  opacity: 1;
+}
+
+/* Pill toggles (lang, theme) */
+.pill {
+  display: inline-flex;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px;
+}
+.pill button {
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  padding: 5px 13px;
+  border-radius: 999px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.2;
+}
+.pill button.active {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-weight: 600;
+}
+
+/* ---------------------------- Layout column --------------------------- */
+.scroll {
+  flex: 1;
+  overflow-y: auto;
+}
+.col {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* ------------------------------ Uploader ------------------------------ */
+.uploader {
+  margin-top: 20px;
+  padding: 16px 18px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+}
+.uploader-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.uploader-title {
+  font-weight: 700;
+  font-size: 15px;
+}
+.preloaded {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.preloaded-label {
+  opacity: 0.85;
+}
+.upload-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.choose {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.choose input {
+  display: none;
+}
+.filename {
+  flex: 1;
+  min-width: 80px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.ingest-btn,
+.send {
+  border: none;
+  border-radius: 9px;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  padding: 9px 20px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ingest-btn:disabled,
+.send:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.ingest-msg {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--accent-strong);
+}
+
+/* -------------------------------- Chat -------------------------------- */
+.chat {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px 0 8px;
+}
+.empty {
+  margin: 80px auto;
+  max-width: 440px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+.msg {
+  display: flex;
+}
+.msg.user {
+  justify-content: flex-end;
+}
+.msg.assistant {
+  justify-content: flex-start;
+}
+.bubble {
+  max-width: 82%;
+  padding: 13px 16px;
+  border-radius: 15px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+.msg.user .bubble {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border-end-end-radius: 5px;
+}
+.msg.assistant .bubble {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-end-start-radius: 5px;
+  box-shadow: var(--shadow);
+}
+
+/* Assistant meta: badge + sources */
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.sources-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  padding: 0;
+}
+.sources-toggle:hover {
+  color: var(--accent-strong);
+}
+.chev {
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+.chev.up {
+  transform: rotate(180deg);
+}
+.sources {
+  margin: 12px 0 0;
+  padding: 10px 14px;
+  list-style: none;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 13px;
+}
+.sources li {
+  padding: 3px 0;
+}
+.src-name {
+  font-family: ui-monospace, Consolas, monospace;
+  color: var(--text);
+}
+.src-page {
+  color: var(--text-muted);
+}
+
+/* Thinking indicator */
+.bubble.thinking {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--text-muted);
+}
+.pulse {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse-dot 1.2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ------------------------------ Composer ------------------------------ */
+.composer-wrap {
+  border-top: 1px solid var(--border);
+  padding: 14px 0 12px;
+  background: var(--bg);
+}
+.composer {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+.composer textarea {
+  flex: 1;
+  resize: none;
+  padding: 13px 15px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg-elevated);
+  color: var(--text);
+  font: inherit;
+  line-height: 1.5;
+  max-height: 160px;
+}
+.composer textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.hint {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}

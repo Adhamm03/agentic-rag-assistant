@@ -1,0 +1,23 @@
+# --- Runtime (the app: ingest, retriever, agent, api) ---
+fastapi
+uvicorn
+python-multipart          # FastAPI file uploads (/ingest)
+pydantic
+langchain-core
+langchain-community       # PyPDFLoader
+langchain-text-splitters  # RecursiveCharacterTextSplitter
+langgraph
+langchain-openai          # generator (gpt-4o-mini)
+langchain-groq            # optional generator/judge provider
+langchain-google-genai    # optional generator/judge provider
+qdrant-client
+sentence-transformers     # bge-m3 dense + bge-reranker cross-encoder
+fastembed                 # bm25 sparse vectors
+pypdf                     # PDF parsing (via PyPDFLoader)
+python-dotenv
+
+# --- Evaluation only (RAGAS; not imported by the runtime/serving path) ---
+ragas
+nest-asyncio
+pandas
+matplotlib
