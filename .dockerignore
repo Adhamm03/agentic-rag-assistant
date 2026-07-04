@@ -2,12 +2,11 @@
 .env
 .env.example
 
-# Not needed in the image.
+# Not needed in the backend image (frontend deploys separately).
+frontend/
 venv/
 qdrant_storage/
 **/node_modules
-frontend/dist
-static/
 __pycache__/
 **/__pycache__/
 *.pyc

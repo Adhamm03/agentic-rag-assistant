@@ -7,9 +7,9 @@ Endpoints (all under /api):
     POST /api/ingest   multipart PDFs -> {sources, pages, chunks_indexed}
     POST /api/eval     RAGAS evaluation (Milestone 5 — stub)
 
-If a built frontend exists at <project>/static, it is served at / (single-
-container deploy: FastAPI serves both the React app and the API). The models are
-loaded ONCE at startup and shared across requests.
+API only — the React frontend is deployed separately and calls this API via its
+absolute URL (CORS is enabled). The models are loaded ONCE at startup and shared
+across requests.
 
 Run (from project root):
     ./venv/Scripts/python.exe -m uvicorn app.api:app --host 127.0.0.1 --port 8000
@@ -24,7 +24,6 @@ from pathlib import Path
 
 from fastapi import APIRouter, FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from . import config
@@ -42,11 +41,11 @@ LOCK = threading.Lock()   # serialize access to the store + models
 
 app = FastAPI(title="Agentic RAG Assistant", version="1.0")
 
-# CORS for local dev when the Vite dev server (5173) calls the API on 8000.
-# In the single-container deploy the frontend is same-origin, so this is a no-op.
+# CORS — the frontend is a separate origin (Render / Vite dev), so allow it.
+# Configure via CORS_ORIGINS env (comma-separated), defaults to "*".
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=config.CORS_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -162,13 +161,3 @@ def eval_endpoint() -> dict:
 
 
 app.include_router(api)
-
-# --------------------------------------------------------------------------- #
-# Static frontend (single-container deploy). Mounted LAST so /api wins. Only
-# active when a build exists at <project>/static (created by the Docker build);
-# in local dev the Vite dev server serves the UI instead.
-# --------------------------------------------------------------------------- #
-
-STATIC_DIR = config.BASE_DIR / "static"
-if STATIC_DIR.is_dir():
-    app.mount("/", StaticFiles(directory=str(STATIC_DIR), html=True), name="ui")

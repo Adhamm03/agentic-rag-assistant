@@ -1,11 +1,11 @@
-# Full app in one image (FastAPI serves the React UI + the API) + Qdrant.
+# Backend API + Qdrant (the React frontend deploys separately, e.g. Render).
 #
 #   docker compose up --build
-#   -> app at http://localhost:8000   (UI at /, API at /api, docs at /docs)
+#   -> API at http://localhost:8000/api   (docs at http://localhost:8000/docs)
 #
 # Requires a .env at the repo root with at least OPENAI_API_KEY (the generator).
-# First startup is slow: the app downloads the embedding + reranker models
-# (~4 GB) into the model_cache volume; later starts reuse it.
+# First startup is slow: it downloads the embedding + reranker models (~4 GB)
+# into the model_cache volume; later starts reuse it.
 
 services:
   qdrant:

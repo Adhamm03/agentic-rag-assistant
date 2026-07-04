@@ -35,7 +35,7 @@ app/                 backend package
   ingest.py          load PDFs -> chunk -> embed + upsert (CLI)
   retriever.py       hybrid dense+sparse retrieval fused with RRF, then rerank
   agent.py           LangGraph agent: route -> retrieve -> grounding -> generate
-  api.py             FastAPI app: serves /api/* and the built UI at /
+  api.py             FastAPI app: /api/* endpoints (frontend deploys separately)
 data/pdfs/           the document corpus
 eval/                ground-truth QA (ground_truth_qa.json / .csv) for RAGAS
 qdrant_storage/      embedded on-disk vector index (gitignored, regenerable)
@@ -94,16 +94,16 @@ themes, PDF upload, and cited answers with a collapsible Sources panel.
 > The embedded vector store is single-process: run the CLIs **or** the API
 > server, not both at once (they contend for the same `qdrant_storage` lock).
 
-## Run with Docker
+## Run with Docker (backend)
 
-One image serves the React UI **and** the API; Qdrant runs as a service:
+The backend API + Qdrant run via Compose (the frontend runs separately — `npm run dev`):
 
 ```bash
 # needs a .env at the repo root with OPENAI_API_KEY (the generator)
 docker compose up --build
 ```
 
-- App (UI + API) → **http://localhost:8000** (UI at `/`, API at `/api`, docs at `/docs`)
+- API → **http://localhost:8000/api** (docs at `/docs`)
 
 Then populate the index (the Qdrant service starts empty):
 
@@ -117,20 +117,27 @@ Notes:
   into the `model_cache` volume; later starts reuse it.
 - torch is installed CPU-only to keep the image lean; no GPU dependency.
 
-## Deploy to Hugging Face Spaces
+## Deploy (split: backend on HF Spaces, frontend on Render)
 
-The models need ~5 GB RAM, so pick a host that provides it — **HF Spaces' free
-CPU tier gives 16 GB** (Render's free tier is only 512 MB and OOMs). The repo is a
-ready **Docker Space** (see the metadata at the top of this README).
+The models need ~5 GB RAM, so the **backend** goes where there's enough — **HF
+Spaces' free CPU tier gives 16 GB** (Render's free tier is 512 MB and OOMs). The
+lightweight **frontend** goes on Render as a static site.
 
+**Backend → Hugging Face Space (Docker):** the repo is a ready Docker Space (see
+the metadata at the top of this README).
 1. Create a **Docker** Space, push this repo to it.
-2. Set Space **secrets**: `OPENAI_API_KEY`, and `QDRANT_URL` + `QDRANT_API_KEY`
-   pointing at a **Qdrant Cloud** cluster (free 1 GB — a Space's disk is
-   ephemeral, so use managed Qdrant for persistence).
-3. Ingest once into that cluster (from your machine, with the same `QDRANT_URL`
-   in `.env`): `python -m app.ingest --pdf-dir data/pdfs`.
-4. The Space builds the Dockerfile, serves the UI + API on the configured port,
-   and downloads the models on first boot.
+2. Space **secrets**: `OPENAI_API_KEY`, plus `QDRANT_URL` + `QDRANT_API_KEY` for a
+   **Qdrant Cloud** cluster (free 1 GB — a Space's disk is ephemeral).
+3. Ingest once into that cluster (from your machine, same `QDRANT_URL` in `.env`):
+   `python -m app.ingest --pdf-dir data/pdfs`.
+4. The Space builds the Dockerfile and boots the API on its URL.
+
+**Frontend → Render (Static Site):**
+1. New **Static Site**, root directory `frontend`.
+2. Build command `npm ci && npm run build`, publish directory `dist`.
+3. Env var **`VITE_API_URL`** = your HF Space URL (e.g. `https://<user>-<space>.hf.space`).
+   The frontend then calls `<VITE_API_URL>/api/*`; CORS is open on the backend
+   (tighten with `CORS_ORIGINS` if you like).
 
 ## Evaluation (RAGAS)
 

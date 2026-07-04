@@ -82,6 +82,13 @@ JUDGE_PROVIDER = os.getenv("JUDGE_PROVIDER", "groq")
 JUDGE_MODEL = os.getenv("JUDGE_MODEL")
 
 # --------------------------------------------------------------------------- #
+# API / CORS
+# --------------------------------------------------------------------------- #
+# The frontend is deployed on a different origin (e.g. Render), so allow it to
+# call this API. Comma-separated list, or "*" for any origin (default).
+CORS_ORIGINS = [o.strip() for o in os.getenv("CORS_ORIGINS", "*").split(",") if o.strip()]
+
+# --------------------------------------------------------------------------- #
 # Paths
 # --------------------------------------------------------------------------- #
 DATA_DIR = BASE_DIR / "data" / "pdfs"    # default corpus for the ingest CLI

@@ -1,16 +1,7 @@
-# Single-container full app: build the React UI, then run FastAPI which serves
-# both the API (/api) and the built UI (/). CPU-only. Works locally and on
-# Hugging Face Spaces (which runs containers as a non-root user, UID 1000).
+# Backend image — FastAPI + the RAG pipeline (CPU-only, API only).
+# The frontend is deployed separately (e.g. Render static site).
+# Works on Hugging Face Spaces (runs containers as non-root, UID 1000).
 
-# ---- Stage 1: build the React frontend ----
-FROM node:20-alpine AS frontend
-WORKDIR /ui
-COPY frontend/package*.json ./
-RUN npm ci
-COPY frontend/ ./
-RUN npm run build            # -> /ui/dist
-
-# ---- Stage 2: Python backend serving the API + the built UI ----
 FROM python:3.11-slim
 
 RUN apt-get update \
@@ -34,7 +25,6 @@ WORKDIR /home/user/app
 COPY --chown=user app  ./app
 COPY --chown=user data ./data
 COPY --chown=user eval ./eval
-COPY --chown=user --from=frontend /ui/dist ./static   # served at / by FastAPI
 
 # Models (bge-m3, reranker, bm25) download on first startup into HF_HOME.
 EXPOSE 7860

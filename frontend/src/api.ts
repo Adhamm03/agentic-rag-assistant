@@ -1,4 +1,8 @@
-// API client for the Sanad RAG backend (proxied via /api -> :8000).
+// API client for the Sanad RAG backend.
+// - Local dev: VITE_API_URL unset -> relative "/api/*" (Vite proxies to :8000).
+// - Deployed (Render): set VITE_API_URL to the backend URL (the HF Space), so
+//   calls go to "https://<backend>/api/*". CORS is enabled server-side.
+const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? ''
 
 export interface Source {
   source: string | null
@@ -21,7 +25,7 @@ export interface IngestResponse {
 
 export async function health(): Promise<boolean> {
   try {
-    const res = await fetch('/api/health')
+    const res = await fetch(`${API_BASE}/api/health`)
     if (!res.ok) return false
     const data = await res.json()
     return Boolean(data.ready)
@@ -31,7 +35,7 @@ export async function health(): Promise<boolean> {
 }
 
 export async function chat(question: string): Promise<ChatResponse> {
-  const res = await fetch('/api/chat', {
+  const res = await fetch(`${API_BASE}/api/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ question }),
@@ -43,7 +47,7 @@ export async function chat(question: string): Promise<ChatResponse> {
 export async function ingest(files: FileList | File[]): Promise<IngestResponse> {
   const form = new FormData()
   for (const f of Array.from(files)) form.append('files', f)
-  const res = await fetch('/api/ingest', { method: 'POST', body: form })
+  const res = await fetch(`${API_BASE}/api/ingest`, { method: 'POST', body: form })
   if (!res.ok) throw new Error(`Ingest failed (${res.status}): ${await res.text()}`)
   return res.json()
 }
