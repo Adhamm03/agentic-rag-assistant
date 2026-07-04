@@ -37,5 +37,5 @@ COPY --chown=user eval ./eval
 COPY --chown=user --from=frontend /ui/dist ./static   # served at / by FastAPI
 
 # Models (bge-m3, reranker, bm25) download on first startup into HF_HOME.
-EXPOSE 8000
-CMD python -m uvicorn app.api:app --host 0.0.0.0 --port ${PORT:-8000}
+EXPOSE 7860
+CMD python -m uvicorn app.api:app --host 0.0.0.0 --port ${PORT:-7860}

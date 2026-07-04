@@ -23,7 +23,7 @@ services:
     volumes:
       - model_cache:/home/user/.cache    # persist HF + fastembed model downloads
     ports:
-      - "8000:8000"
+      - "8000:7860"   # host 8000 -> container 7860 (matches Dockerfile CMD)
     depends_on:
       - qdrant
 
