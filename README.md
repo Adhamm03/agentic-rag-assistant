@@ -1,3 +1,13 @@
+---
+title: Sanad RAG Assistant
+emoji: 📄
+colorFrom: orange
+colorTo: red
+sdk: docker
+app_port: 8000
+pinned: false
+---
+
 # Agentic RAG Assistant
 
 Hybrid-retrieval RAG over your PDFs with reranking, an agentic answer layer that
@@ -25,7 +35,7 @@ app/                 backend package
   ingest.py          load PDFs -> chunk -> embed + upsert (CLI)
   retriever.py       hybrid dense+sparse retrieval fused with RRF, then rerank
   agent.py           LangGraph agent: route -> retrieve -> grounding -> generate
-  api.py             FastAPI app: /health /chat /ingest /eval
+  api.py             FastAPI app: serves /api/* and the built UI at /
 data/pdfs/           the document corpus
 eval/                ground-truth QA (ground_truth_qa.json / .csv) for RAGAS
 qdrant_storage/      embedded on-disk vector index (gitignored, regenerable)
@@ -74,41 +84,53 @@ themes, PDF upload, and cited answers with a collapsible Sources panel.
 
 ### API
 
-| Method | Path      | Body                    | Returns |
-|--------|-----------|-------------------------|---------|
-| GET    | `/health` | —                       | readiness |
-| POST   | `/chat`   | `{ "question": "..." }` | `{ answer, route, grounded, sources }` |
-| POST   | `/ingest` | multipart PDF file(s)   | `{ sources, pages, chunks_indexed }` |
-| POST   | `/eval`   | —                       | RAGAS eval (planned) |
+| Method | Path          | Body                    | Returns |
+|--------|---------------|-------------------------|---------|
+| GET    | `/api/health` | —                       | readiness |
+| POST   | `/api/chat`   | `{ "question": "..." }` | `{ answer, route, grounded, sources }` |
+| POST   | `/api/ingest` | multipart PDF file(s)   | `{ sources, pages, chunks_indexed }` |
+| POST   | `/api/eval`   | —                       | RAGAS eval (planned) |
 
 > The embedded vector store is single-process: run the CLIs **or** the API
 > server, not both at once (they contend for the same `qdrant_storage` lock).
 
 ## Run with Docker
 
-Full stack (Qdrant + backend + nginx-served frontend) via Docker Compose:
+One image serves the React UI **and** the API; Qdrant runs as a service:
 
 ```bash
 # needs a .env at the repo root with OPENAI_API_KEY (the generator)
 docker compose up --build
 ```
 
-- Frontend → **http://localhost:5173** (nginx proxies `/api` to the backend)
-- Backend → **http://localhost:8000** (`/docs`)
+- App (UI + API) → **http://localhost:8000** (UI at `/`, API at `/api`, docs at `/docs`)
 
-Then populate the index (Qdrant starts empty):
+Then populate the index (the Qdrant service starts empty):
 
 ```bash
-docker compose exec backend python -m app.ingest --pdf-dir data/pdfs
+docker compose exec app python -m app.ingest --pdf-dir data/pdfs
 ```
 
 Notes:
-- The backend uses the **Qdrant service** (`QDRANT_URL=http://qdrant:6333`), not
-  embedded mode — no single-process lock, and data persists in the `qdrant_data`
-  volume.
-- **First startup is slow:** the backend downloads the bge-m3 + reranker models
-  (~4 GB) into the `model_cache` volume; subsequent starts reuse it.
-- torch is installed CPU-only to keep the image lean; there's no GPU dependency.
+- Uses the **Qdrant service** (`QDRANT_URL=http://qdrant:6333`), not embedded mode.
+- **First startup is slow:** it downloads the bge-m3 + reranker models (~4 GB)
+  into the `model_cache` volume; later starts reuse it.
+- torch is installed CPU-only to keep the image lean; no GPU dependency.
+
+## Deploy to Hugging Face Spaces
+
+The models need ~5 GB RAM, so pick a host that provides it — **HF Spaces' free
+CPU tier gives 16 GB** (Render's free tier is only 512 MB and OOMs). The repo is a
+ready **Docker Space** (see the metadata at the top of this README).
+
+1. Create a **Docker** Space, push this repo to it.
+2. Set Space **secrets**: `OPENAI_API_KEY`, and `QDRANT_URL` + `QDRANT_API_KEY`
+   pointing at a **Qdrant Cloud** cluster (free 1 GB — a Space's disk is
+   ephemeral, so use managed Qdrant for persistence).
+3. Ingest once into that cluster (from your machine, with the same `QDRANT_URL`
+   in `.env`): `python -m app.ingest --pdf-dir data/pdfs`.
+4. The Space builds the Dockerfile, serves the UI + API on the configured port,
+   and downloads the models on first boot.
 
 ## Evaluation (RAGAS)
 

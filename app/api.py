@@ -1,16 +1,15 @@
 """
 api.py — FastAPI backend for the Agentic RAG Assistant (single-user).
 
-Endpoints:
-    GET  /health   liveness + readiness probe
-    POST /chat     {question} -> {answer, route, grounded, sources}
-    POST /ingest   multipart PDFs -> {sources, pages, chunks_indexed}
-    POST /eval     RAGAS evaluation (Milestone 5 — stub)
+Endpoints (all under /api):
+    GET  /api/health   liveness + readiness probe
+    POST /api/chat     {question} -> {answer, route, grounded, sources}
+    POST /api/ingest   multipart PDFs -> {sources, pages, chunks_indexed}
+    POST /api/eval     RAGAS evaluation (Milestone 5 — stub)
 
-Embedded Qdrant (Case A) allows only ONE process to hold the store, so this
-server is that single owner: it loads the retriever (client + models) and the
-agent ONCE at startup and shares them across /chat and /ingest. Don't run the
-CLIs while the server is up. A lock serializes access to the store + models.
+If a built frontend exists at <project>/static, it is served at / (single-
+container deploy: FastAPI serves both the React app and the API). The models are
+loaded ONCE at startup and shared across requests.
 
 Run (from project root):
     ./venv/Scripts/python.exe -m uvicorn app.api:app --host 127.0.0.1 --port 8000
@@ -23,8 +22,9 @@ import tempfile
 import threading
 from pathlib import Path
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import APIRouter, FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from . import config
@@ -38,17 +38,20 @@ from .vector_store import ensure_collection, upsert_chunks
 # --------------------------------------------------------------------------- #
 
 STATE: dict = {}          # holds "retriever" and "agent"
-LOCK = threading.Lock()   # serialize access to the embedded store + models
+LOCK = threading.Lock()   # serialize access to the store + models
 
 app = FastAPI(title="Agentic RAG Assistant", version="1.0")
 
-# Dev CORS: allow the Vite dev server (for the frontend we'll add later).
+# CORS for local dev when the Vite dev server (5173) calls the API on 8000.
+# In the single-container deploy the frontend is same-origin, so this is a no-op.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+api = APIRouter(prefix="/api")
 
 
 @app.on_event("startup")
@@ -88,15 +91,15 @@ class IngestResponse(BaseModel):
 
 
 # --------------------------------------------------------------------------- #
-# Endpoints
+# Endpoints (mounted under /api)
 # --------------------------------------------------------------------------- #
 
-@app.get("/health")
+@api.get("/health")
 def health() -> dict:
     return {"status": "ok", "ready": bool(STATE.get("agent"))}
 
 
-@app.post("/chat", response_model=ChatResponse)
+@api.post("/chat", response_model=ChatResponse)
 def chat(req: ChatRequest) -> ChatResponse:
     if not req.question.strip():
         raise HTTPException(status_code=400, detail="Question is empty.")
@@ -123,7 +126,7 @@ def chat(req: ChatRequest) -> ChatResponse:
     )
 
 
-@app.post("/ingest", response_model=IngestResponse)
+@api.post("/ingest", response_model=IngestResponse)
 def ingest(files: list[UploadFile] = File(...)) -> IngestResponse:
     pdfs = [f for f in files if (f.filename or "").lower().endswith(".pdf")]
     if not pdfs:
@@ -153,6 +156,19 @@ def ingest(files: list[UploadFile] = File(...)) -> IngestResponse:
     )
 
 
-@app.post("/eval")
+@api.post("/eval")
 def eval_endpoint() -> dict:
     raise HTTPException(status_code=501, detail="RAGAS eval not implemented yet (Milestone 5).")
+
+
+app.include_router(api)
+
+# --------------------------------------------------------------------------- #
+# Static frontend (single-container deploy). Mounted LAST so /api wins. Only
+# active when a build exists at <project>/static (created by the Docker build);
+# in local dev the Vite dev server serves the UI instead.
+# --------------------------------------------------------------------------- #
+
+STATIC_DIR = config.BASE_DIR / "static"
+if STATIC_DIR.is_dir():
+    app.mount("/", StaticFiles(directory=str(STATIC_DIR), html=True), name="ui")
