@@ -10,9 +10,51 @@ pinned: false
 
 # Agentic RAG Assistant
 
-Hybrid-retrieval RAG over your PDFs with reranking, an agentic answer layer that
-decides when to retrieve and refuses to hallucinate, and (planned) a RAGAS
-evaluation. Multilingual (Arabic + English).
+> **Chat with your PDFs and get cited, grounded answers — hybrid retrieval + reranking, an agent that refuses to hallucinate, and a RAGAS harness that measures whether it actually works. Arabic + English.**
+
+![Demo](docs/demo.gif)
+
+**Live demo:** (https://agentic-rag-assistant-5t1f.onrender.com) 
+
+<!-- Replace the three links above once deployed. The GIF lives at docs/demo.gif -->
+
+## Problem → Approach → Result
+
+**Problem.** Businesses want a bot that answers questions from *their* documents
+without making things up. The two things most freelance RAG builds get wrong:
+retrieval is naive (dense-only, no reranking), and nobody can *prove* the answers
+are grounded.
+
+**Approach.**
+- **Hybrid retrieval** — dense (`bge-m3`) **and** sparse/BM25 vectors in Qdrant,
+  fused with Reciprocal Rank Fusion, then reranked with `bge-reranker-v2-m3`.
+- **Agentic layer** (LangGraph) — routes each question (retrieve vs. answer
+  directly), forces `[source:page]` citations, and runs a **grounding gate**: if
+  the retrieved context is too weak, it returns *"Not found in the provided
+  documents"* instead of hallucinating.
+- **Measurement** — a RAGAS harness scores **naive vs. hybrid+rerank** with an
+  **independent judge** LLM (different model family from the generator, so answers
+  aren't self-graded).
+- **Multilingual** — works over Arabic + English documents (EN/AR UI toggle with RTL).
+
+**Result.** End-to-end, deployed, and *measurable*: the anti-hallucination
+grounding gate and a reproducible RAGAS evaluation are the differentiators. See
+the numbers below and in [eval/report.md](eval/report.md).
+
+### RAGAS results (naive vs. hybrid + rerank)
+
+| Metric | Naive vector | Hybrid + rerank |
+|---|---|---|
+| faithfulness | 1.000 | 0.750 |
+| answer_relevancy | 0.963 | 0.944 |
+| context_precision | 1.000 | 0.902 |
+| context_recall | 1.000 | 1.000 |
+
+> ⚠️ **Illustrative smoke test — 2 questions only.** The full 16-question run was
+> cut short by free-tier LLM-judge **rate limits**, so this is *not* a
+> statistically meaningful comparison (here the tiny sample even favours naive).
+> The pipeline supports the full set — re-run `python -m app.evaluate` with a
+> higher-quota judge to reproduce it. Details in [eval/report.md](eval/report.md).
 
 ## Architecture
 

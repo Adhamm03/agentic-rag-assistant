@@ -96,8 +96,16 @@ class Retriever:
     def retrieve(self, query: str, top_k: int = config.TOP_K,
                  candidates: int = config.FUSED_CANDIDATES) -> list[dict]:
         """End-to-end: hybrid search -> rerank -> top_k."""
+        import time
+
+        t = time.perf_counter()
         fused = self.hybrid_search(query, candidates=candidates)
-        return self.rerank(query, fused, top_k=top_k)
+        t_hybrid = time.perf_counter()
+        ranked = self.rerank(query, fused, top_k=top_k)
+        t_rerank = time.perf_counter()
+        print(f"[retrieve] hybrid_search={t_hybrid - t:.2f}s  "
+              f"rerank={t_rerank - t_hybrid:.2f}s  ({len(fused)} candidates)")
+        return ranked
 
 
 # --------------------------------------------------------------------------- #
