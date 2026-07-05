@@ -14,9 +14,7 @@ pinned: false
 
 ![Demo](docs/demo.gif)
 
-**Live demo:** (https://agentic-rag-assistant-5t1f.onrender.com) 
-
-<!-- Replace the three links above once deployed. The GIF lives at docs/demo.gif -->
+**Live demo:** [agentic-rag-assistant-5t1f.onrender.com](https://agentic-rag-assistant-5t1f.onrender.com)
 
 ## Problem → Approach → Result
 
