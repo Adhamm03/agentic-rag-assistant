@@ -33,14 +33,7 @@ class Retriever:
     """
 
     def __init__(self, collection: str = config.DEFAULT_COLLECTION):
-        import os
-
-        import torch
         from sentence_transformers import CrossEncoder
-
-        # On CPU-only hosts (e.g. HF Spaces) torch often defaults to a single
-        # thread; use all cores so the reranker/embedder aren't bottlenecked.
-        torch.set_num_threads(os.cpu_count() or 4)
 
         self.collection = collection
         self.client = get_client()
