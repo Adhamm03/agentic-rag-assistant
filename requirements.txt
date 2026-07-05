@@ -1,23 +1,34 @@
 # --- Runtime (the app: ingest, retriever, agent, api) ---
-fastapi
-uvicorn
-python-multipart          # FastAPI file uploads (/ingest)
-pydantic
-langchain-core
-langchain-community       # PyPDFLoader
-langchain-text-splitters  # RecursiveCharacterTextSplitter
-langgraph
-langchain-openai          # generator (gpt-4o-mini)
-langchain-groq            # optional generator/judge provider
-langchain-google-genai    # optional generator/judge provider
-qdrant-client
-sentence-transformers     # bge-m3 dense + bge-reranker cross-encoder
-fastembed                 # bm25 sparse vectors
-pypdf                     # PDF parsing (via PyPDFLoader)
-python-dotenv
+fastapi==0.139.0
+uvicorn==0.49.0
+python-multipart==0.0.32       # FastAPI file uploads (/ingest)
+pydantic==2.13.4
+langchain-core==1.4.8
+langchain-community==0.4.2      # PyPDFLoader
+langchain-text-splitters==1.1.2 # RecursiveCharacterTextSplitter
+langgraph==1.2.7
+langchain-openai==1.3.3         # generator (gpt-4o-mini)
+langchain-groq==1.1.3           # optional generator/judge provider
+langchain-google-genai==4.2.6   # optional generator/judge provider
+qdrant-client==1.18.0
+sentence-transformers==5.6.0    # bge-m3 dense + bge-reranker cross-encoder
+fastembed==0.8.0                # bm25 sparse vectors
+pypdf==6.14.2                   # PDF parsing (via PyPDFLoader)
+python-dotenv==1.2.2
 
 # --- Evaluation only (RAGAS; not imported by the runtime/serving path) ---
-ragas
-nest-asyncio
-pandas
-matplotlib
+ragas==0.4.3
+nest-asyncio==1.6.0
+pandas==3.0.3
+matplotlib==3.11.0
+
+# --- Pinned transitive deps (do not remove) ---
+# These are pulled in by sentence-transformers/datasets, not imported directly.
+# They are pinned because an unpinned combo produced a native pyarrow load
+# crash (0xC0000005) on Windows. Keeping them fixed makes builds reproducible.
+# See the Windows pre-import guard in app/__init__.py.
+numpy==2.4.6
+pyarrow==24.0.0
+datasets==5.0.0
+transformers==5.13.0
+torch==2.12.1

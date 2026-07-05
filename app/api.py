@@ -38,6 +38,8 @@ from .vector_store import ensure_collection, upsert_chunks
 
 STATE: dict = {}          # holds "retriever" and "agent"
 LOCK = threading.Lock()   # serialize access to the store + models
+READY = threading.Event() # set the instant models finish loading ("Ready.")
+LOAD_ERROR: dict = {}     # holds {"error": msg} if startup loading failed
 
 app = FastAPI(title="Agentic RAG Assistant", version="1.0")
 
@@ -53,13 +55,28 @@ app.add_middleware(
 api = APIRouter(prefix="/api")
 
 
+def _load_models() -> None:
+    """Load models + Qdrant. Runs in a background thread so the HTTP server (and
+    the /api/health probe) is available immediately, reporting "loading" until
+    READY is set here — i.e. exactly when the log prints "Ready."."""
+    try:
+        print("Loading models + Qdrant (one-time startup)...")
+        retriever = Retriever(collection=config.DEFAULT_COLLECTION)
+        STATE["retriever"] = retriever
+        STATE["agent"] = build_agent(retriever=retriever)  # share client + models
+        READY.set()
+        print("Ready.")
+    except Exception as e:  # surface via /api/health instead of a silent crash
+        LOAD_ERROR["error"] = str(e)
+        print(f"Startup failed: {e}")
+
+
 @app.on_event("startup")
 def _startup() -> None:
-    print("Loading models + Qdrant (one-time startup)...")
-    retriever = Retriever(collection=config.DEFAULT_COLLECTION)
-    STATE["retriever"] = retriever
-    STATE["agent"] = build_agent(retriever=retriever)  # share client + models
-    print("Ready.")
+    # Load in the background: the server binds and serves the health probe right
+    # away, so the frontend sees a clean "loading" state instead of a hanging /
+    # refused connection while the (multi-GB) models load on first boot.
+    threading.Thread(target=_load_models, name="model-loader", daemon=True).start()
 
 
 # --------------------------------------------------------------------------- #
@@ -95,11 +112,28 @@ class IngestResponse(BaseModel):
 
 @api.get("/health")
 def health() -> dict:
-    return {"status": "ok", "ready": bool(STATE.get("agent"))}
+    """Readiness probe. ready=True only once the models have finished loading
+    (mirrors the backend log's "Ready."); "loading" until then, "error" if
+    startup failed. The frontend polls this and gates its ready indicator on it.
+    """
+    if READY.is_set():
+        return {"status": "ready", "ready": True}
+    if LOAD_ERROR:
+        return {"status": "error", "ready": False, "error": LOAD_ERROR["error"]}
+    return {"status": "loading", "ready": False}
+
+
+def _require_ready() -> None:
+    """503 while models are still loading, so early calls get a clean signal."""
+    if not READY.is_set():
+        if LOAD_ERROR:
+            raise HTTPException(status_code=503, detail=f"Backend failed to start: {LOAD_ERROR['error']}")
+        raise HTTPException(status_code=503, detail="Models are still loading, please wait.")
 
 
 @api.post("/chat", response_model=ChatResponse)
 def chat(req: ChatRequest) -> ChatResponse:
+    _require_ready()
     if not req.question.strip():
         raise HTTPException(status_code=400, detail="Question is empty.")
 
@@ -127,6 +161,7 @@ def chat(req: ChatRequest) -> ChatResponse:
 
 @api.post("/ingest", response_model=IngestResponse)
 def ingest(files: list[UploadFile] = File(...)) -> IngestResponse:
+    _require_ready()
     pdfs = [f for f in files if (f.filename or "").lower().endswith(".pdf")]
     if not pdfs:
         raise HTTPException(status_code=400, detail="No PDF files uploaded.")

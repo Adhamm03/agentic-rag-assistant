@@ -9,3 +9,13 @@ Modules:
     agent         LangGraph agent: route -> retrieve -> grounding -> generate
     api           FastAPI app exposing /ingest and /chat
 """
+
+# Windows: pre-load pyarrow before torch/sentence-transformers/datasets. When
+# pyarrow's native extension is loaded late and re-entrantly (via the
+# sentence_transformers -> datasets -> pandas -> pyarrow chain, after torch/
+# scipy/sklearn are already resident), its init hits a 0xC0000005 access
+# violation that silently kills the process. Loading it first avoids the crash.
+import sys as _sys
+
+if _sys.platform == "win32":
+    import pyarrow.dataset  # noqa: F401

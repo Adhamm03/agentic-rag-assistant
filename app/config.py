@@ -69,7 +69,10 @@ TOP_K = int(os.getenv("TOP_K", "5"))
 # --------------------------------------------------------------------------- #
 # Below this best-rerank score, retrieval is treated as too weak to answer from
 # and the agent returns "not found" instead of risking a hallucination.
-GROUNDING_THRESHOLD = float(os.getenv("GROUNDING_THRESHOLD", "0.05"))
+# Calibrated to this corpus: genuinely off-topic queries score <=0.0004, while
+# anything plausibly in the docs (after the agent's query rewrite) scores >=0.01.
+# 0.01 sits in that gap; the generate prompt is the second line of defence.
+GROUNDING_THRESHOLD = float(os.getenv("GROUNDING_THRESHOLD", "0.01"))
 NOT_FOUND_MESSAGE = os.getenv(
     "NOT_FOUND_MESSAGE",
     "I couldn't find this in the provided documents.",

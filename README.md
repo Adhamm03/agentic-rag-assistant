@@ -158,4 +158,4 @@ context_recall. Outputs: `eval/results.json`, `eval/report.md`,
 
 - On CPU, `bge-m3` + `bge-reranker-v2-m3` make ingestion and each answer take
   tens of seconds — expected; a GPU makes it fast.
-- LLM provider is configurable (`LLM_PROVIDER=groq` default, or `gemini`).
+- LLM provider is configurable (`LLM_PROVIDER=openai` default, or `gemini`).

@@ -2,11 +2,16 @@
 agent.py — Agentic answer layer (LangGraph).
 
 Graph:
-    START -> route ─┬─ retrieve -> grounding_check ─┬─ generate -> END
-                    │                               └─ not_found -> END
+    START -> route ─┬─ rewrite -> retrieve -> grounding_check ─┬─ generate -> END
+                    │                                          └─ not_found -> END
                     └─ direct_answer -> END
 
 - route:           LLM classify -> "retrieve" (needs docs) or "direct" (smalltalk).
+- rewrite:         LLM expands the question into document vocabulary (e.g.
+                   "weight" -> "grading"/"percentage") so a vocabulary mismatch
+                   between the user's words and the corpus doesn't sink the
+                   rerank score below GROUNDING_THRESHOLD. Used only for
+                   retrieval + rerank; the original question drives the answer.
 - retrieve:        hybrid dense+sparse + rerank (retriever.Retriever), keeps top-k.
 - grounding_check: gate BEFORE generation — if the best rerank score is below
                    GROUNDING_THRESHOLD (or no context), short-circuit to a
@@ -65,6 +70,7 @@ def get_llm(temperature: float = 0.0, provider: str | None = None,
 class AgentState(TypedDict, total=False):
     question: str
     route: str                 # "retrieve" | "direct"
+    search_query: str          # question expanded with doc vocabulary (retrieval only)
     contexts: list[dict]       # reranked chunks from the retriever
     max_score: float           # best rerank score (grounding signal)
     grounded: bool             # True only when answered from retrieved context
@@ -84,6 +90,17 @@ ROUTE_PROMPT = (
     "             language. If you are unsure, choose RETRIEVE.\n"
     "Reply with ONLY one word: RETRIEVE or DIRECT.\n\n"
     "Message: {question}"
+)
+
+REWRITE_PROMPT = (
+    "Rewrite the user's question into ONE search query that uses the words a "
+    "DOCUMENT would use to state the answer — not the user's exact words. "
+    "Replace informal or ambiguous terms with likely document terminology and "
+    "add synonyms. For example, 'what is the weight of the quizzes' becomes "
+    "'quizzes grading percentage marks contribution to final grade'. Keep the "
+    "user's language. Do not answer the question or invent specific numbers. "
+    "Reply with ONLY the query.\n\n"
+    "Question: {question}"
 )
 
 GENERATE_SYSTEM = (
@@ -146,9 +163,24 @@ def build_agent(collection: str | None = None, retriever=None):
         print(f"[route] -> {decision}  ({time.perf_counter()-t:.2f}s)")
         return {"route": decision}
 
+    def rewrite(state: AgentState) -> AgentState:
+        t = time.perf_counter()
+        msg = REWRITE_PROMPT.format(question=state["question"])
+        try:
+            expanded = router_llm.invoke([HumanMessage(content=msg)]).content.strip()
+        except Exception as e:  # never let a rewrite failure block retrieval
+            print(f"[rewrite] failed ({e}); using original question")
+            expanded = ""
+        # Use the document-vocabulary rewrite for retrieval + rerank; fall back
+        # to the original question if the rewrite came back empty.
+        search_query = expanded or state["question"]
+        print(f"[rewrite] {search_query!r}  ({time.perf_counter()-t:.2f}s)")
+        return {"search_query": search_query}
+
     def retrieve(state: AgentState) -> AgentState:
         t = time.perf_counter()
-        results = retriever.retrieve(state["question"], top_k=config.TOP_K)
+        query = state.get("search_query") or state["question"]
+        results = retriever.retrieve(query, top_k=config.TOP_K)
         max_score = max((r["rerank_score"] for r in results), default=0.0)
         print(f"[retrieve] {len(results)} chunks, best score={max_score:.4f}  "
               f"({time.perf_counter()-t:.2f}s)")
@@ -195,6 +227,7 @@ def build_agent(collection: str | None = None, retriever=None):
 
     graph = StateGraph(AgentState)
     graph.add_node("route", route)
+    graph.add_node("rewrite", rewrite)
     graph.add_node("retrieve", retrieve)
     graph.add_node("generate", generate)
     graph.add_node("not_found", not_found)
@@ -202,7 +235,8 @@ def build_agent(collection: str | None = None, retriever=None):
 
     graph.add_edge(START, "route")
     graph.add_conditional_edges("route", route_branch,
-                                {"retrieve": "retrieve", "direct": "direct_answer"})
+                                {"retrieve": "rewrite", "direct": "direct_answer"})
+    graph.add_edge("rewrite", "retrieve")
     graph.add_conditional_edges("retrieve", grounding_check,
                                 {"generate": "generate", "not_found": "not_found"})
     graph.add_edge("generate", END)
