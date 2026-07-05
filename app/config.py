@@ -63,6 +63,9 @@ UPSERT_BATCH_SIZE = int(os.getenv("UPSERT_BATCH_SIZE", "128"))
 PREFETCH_LIMIT = int(os.getenv("PREFETCH_LIMIT", "20"))
 FUSED_CANDIDATES = int(os.getenv("FUSED_CANDIDATES", "10"))
 TOP_K = int(os.getenv("TOP_K", "5"))
+# Max tokens per query+chunk pair fed to the cross-encoder reranker. Rerank
+# latency scales with this; 256 covers the informative part of an 800-char chunk.
+RERANK_MAX_LENGTH = int(os.getenv("RERANK_MAX_LENGTH", "256"))
 
 # --------------------------------------------------------------------------- #
 # Agent

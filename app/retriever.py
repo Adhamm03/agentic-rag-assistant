@@ -33,7 +33,14 @@ class Retriever:
     """
 
     def __init__(self, collection: str = config.DEFAULT_COLLECTION):
+        import os
+
+        import torch
         from sentence_transformers import CrossEncoder
+
+        # On CPU-only hosts (e.g. HF Spaces) torch often defaults to a single
+        # thread; use all cores so the reranker/embedder aren't bottlenecked.
+        torch.set_num_threads(os.cpu_count() or 4)
 
         self.collection = collection
         self.client = get_client()
@@ -41,7 +48,12 @@ class Retriever:
         self.sparse_model = load_sparse_model()
 
         print(f"Loading reranker:     {config.RERANKER_MODEL_NAME} ...")
-        self.reranker = CrossEncoder(config.RERANKER_MODEL_NAME)
+        # Cap the sequence length: chunks are ~800 chars, and reranking cost
+        # scales with tokens per pair. 256 keeps enough of each chunk for the
+        # relevance signal while cutting per-pair latency sharply.
+        self.reranker = CrossEncoder(
+            config.RERANKER_MODEL_NAME, max_length=config.RERANK_MAX_LENGTH
+        )
 
     # ------------------------- hybrid + rerank ----------------------------- #
 
